@@ -1,0 +1,45 @@
+group=aka-ama-scale
+location=eastasia
+aksname=aks-ama
+az group create --name $group --location $location
+
+# Create AKS Cluster with AMA Addon for Container Insights
+az aks create --name $aksname \
+              --resource-group $group \
+              --auto-upgrade-channel node-image \
+              --enable-syslog true \
+              --location $location \
+              --network-plugin azure \
+              --node-count 1 \
+              --node-vm-size Standard_B2s \
+              --enable-addons monitoring \
+              --workspace-resource-id "/subscriptions/<WorkspaceSubscription>/resourceGroups/<DefaultWorkspaceRG>/providers/Microsoft.OperationalInsights/workspaces/<defaultWorkspaceName>" \
+              --enable-managed-identity \
+              --generate-ssh-keys 
+
+# To validate if AMA POD/Container Running in Cluster
+kubectl get ds ama-logs --namespace=kube-system
+kubectl get deployment ama-logs-rs -n=kube-system
+
+# To Review AMA Kubernetes Events
+kubectl get events -A --sort-by=.metadata.creationTimestamp    
+
+# To Validate if Cluster has AMA Addon for Container Insights Enabled
+az aks show -g $group -n $aksname
+## Output Should be like below
+"addonProfiles": {
+    "omsagent": {
+      "config": {
+        "logAnalyticsWorkspaceResourceID": "/subscriptions/<WorkspaceSubscription>/resourceGroups/<DefaultWorkspaceRG>/providers/Microsoft.OperationalInsights/workspaces/<defaultWorkspaceName>"
+      },
+      "enabled": true
+    }
+  }
+##
+
+# Manual Enable on Existing Cluster
+law=/subscriptions/<WorkspaceSubscription>/resourceGroups/<DefaultWorkspaceRG>/providers/Microsoft.OperationalInsights/workspaces/<defaultWorkspaceName>
+az aks enable-addons -a monitoring -n $aksname -g $group --workspace-resource-id $law
+
+# Disable AMA Addon for Container Insights
+az aks disable-addons  -a monitoring -n $aksname -g $group 

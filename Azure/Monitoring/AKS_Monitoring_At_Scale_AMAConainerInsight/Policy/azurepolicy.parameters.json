@@ -1,0 +1,9 @@
+{
+  "workspaceResourceId": {
+    "type": "string",
+    "metadata": {
+      "displayName": "/subscriptions/<WorkspaceSubscription>/resourceGroups/<DefaultWorkspaceRG>/providers/Microsoft.OperationalInsights/workspaces/<defaultWorkspaceName>",
+      "description": "Azure Monitor Log Analytics Resource ID"
+    }
+  }
+}
